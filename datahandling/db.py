@@ -13,9 +13,9 @@ class sqllitedb:
 
 
 class db:
-    def __init__(self, name: str):
+    def __init__(self, name: str, dbtype: str = "SQLite"):
         self.database = sqllitedb(name)
-        self.type = "SQLite"
+        self.dbtype = dbtype
     def getone(self, type):
         return dbquery(database, type.TABLE_ID)
 
@@ -30,7 +30,7 @@ class dbquery:
             #Sanitise the Arguments
             clean[key] = re.sub(r"[^A-Za-z\d.-]", "", value)
         with self.db.database as conn:
-            if(conn.type == "SQLite"):
+            if(conn.dbtype == "SQLite"):
                 formattedquerystring = "SELECT 1 FROM {0} WHERE {1}".format(self.tableid, querystring)
                 conn.execute(formattedquerystring)
                 return conn.fetchone()

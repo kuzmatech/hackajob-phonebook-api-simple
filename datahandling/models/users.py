@@ -2,7 +2,7 @@ from ..db import database
 
 class User:
     TABLE_ID = "USER"
-    def __init__(self, id: int, username: str, password: str, salt: str):
+    def __init__(self, id: str, username: str, password: str, salt: str):
         self.username = username
         self.password = password
         self.salt = salt
