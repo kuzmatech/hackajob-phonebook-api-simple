@@ -6,6 +6,18 @@ class ExampleType:
     def __init__(self, TABLE_ID = 'example'):
         self.TABLE_ID = TABLE_ID
 
+class TestDB:
+    def __init__(self, db:str = "DB"):
+        self.dbname = db
+    def __enter__(self):
+        self.database = db(self.dbname)
+        self.database.database.execute('CREATE TABLE example(id INTEGER PRIMARY KEY, fur TEXT, eyes TEXT)')
+        self.database.database.commit()
+        return self.database
+    def __exit__(self, type, value, traceback):
+        self.database.database.execute('DROP TABLE example')
+        self.database.database.commit()
+
 def test_querystringgenerator_single():
     testdict = {
         "color": "red"
@@ -27,49 +39,38 @@ def test_querystringgenerator_sanitiser():
     assert dbquery.querystringgenerator(testdict) == 'color IS redor11'
 
 def test_add_data_single():
-    database = db('test')
-    database.database.execute('CREATE TABLE example(id INTEGER PRIMARY KEY, fur TEXT, eyes TEXT)')
-    database.database.commit()
     type_ = ExampleType('example')
     testdata = {
         "fur": "short"
     }
-    assert isinstance(database.add(type_, testdata), int)
-    database.database.execute('DROP TABLE example')
-    database.database.commit()
+    with TestDB('test') as database:
+        assert isinstance(database.add(type_, testdata), int)
+
 
 exampleid = None
 
 def test_add_data_multi():
-    database = db('test')
-    database.database.execute('CREATE TABLE example(id INTEGER PRIMARY KEY, fur TEXT, eyes TEXT)')
-    database.database.commit()
     type_ = ExampleType('example')
     testdata = {
         "fur": "short",
         "eyes": "blue"
     }
-    exampleid = database.add(type_, testdata)
-    assert isinstance(exampleid, int)
-    database.database.execute('DROP TABLE example')
-    database.database.commit()
+    with TestDB('test') as database:
+        exampleid = database.add(type_, testdata)
+        assert isinstance(exampleid, int)
 
 
 def test_get_data_single():
-    database = db('test')
-    database.database.execute('CREATE TABLE example(id INTEGER PRIMARY KEY, fur TEXT, eyes TEXT)')
-    database.database.commit()
     type_ = ExampleType('example')
     testdata = {
         "fur": "short",
         "eyes": "blue"
     }
-    exampleid = database.add(type_, testdata)
-    testdata = {
-        "id": exampleid,
-        "fur": "short",
-        "eyes": "blue"
-    }
-    assert testdata == (database.getone(type_).by(id='{0}'.format(exampleid)))
-    database.database.execute('DROP TABLE example')
-    database.database.commit()
+    with TestDB('test') as database:
+        exampleid = database.add(type_, testdata)
+        testdata = {
+            "id": exampleid,
+            "fur": "short",
+            "eyes": "blue"
+        }
+        assert testdata == (database.getone(type_).by(id='{0}'.format(exampleid)))
