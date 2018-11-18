@@ -23,14 +23,22 @@ class dbquery:
     def __init__(self, db:db, tableid: str):
         self.db = db
         self.tableid = tableid
+    @staticmethod
+    def querystringgenerator(queryargs: dict):
+        if(len(queryargs) == 1):
+            return next(iter(queryargs.values()))
+        else:
+            "AND ".join(queryargs)
     def by(self, **kargs):
         clean = {}
         querystring = None
         for key, value in kargs:
             #Sanitise the Arguments
             clean[key] = re.sub(r"[^A-Za-z\d.-]", "", value)
+            clean[key] = "{0} IS {1}".format(key, clean[key])
         with self.db.database as conn:
             if(conn.dbtype == "SQLite"):
+                querystring = dbquery.querystringgenerator(clean)
                 formattedquerystring = "SELECT 1 FROM {0} WHERE {1}".format(self.tableid, querystring)
                 conn.execute(formattedquerystring)
                 return conn.fetchone()
