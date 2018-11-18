@@ -25,17 +25,18 @@ class dbquery:
         self.tableid = tableid
     @staticmethod
     def querystringgenerator(queryargs: dict) -> str:
+        def sanitisedarg(key, value):
+            return "{0} IS {1}".format(key, (re.sub(r"[^A-Za-z\d.-]", "", value)))
         if(len(queryargs) == 1):
             singlequery = ''
             for key, value in queryargs.items():
-                singlequery += '{0} IS {1}'.format(key, value)
+                singlequery += sanitisedarg(key, value)
             return singlequery
         else:
             clean = []
             for key, value in queryargs.items():
                 #Sanitise the Arguments
-                sanitisedarg = "{0} IS {1}".format(key, (re.sub(r"[^A-Za-z\d.-]", "", value)))
-                clean.append(sanitisedarg)
+                clean.append(sanitisedarg(key, value))
             return " AND ".join(clean)
 
     def by(self, **kargs):
